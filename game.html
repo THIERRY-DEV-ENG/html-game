@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paddle and Ball Game</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+        }
+        #gameArea {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background-color: #333;
+            border: 2px solid #fff;
+            overflow: hidden;
+        }
+        #paddle {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            width: 100px;
+            height: 15px;
+            background-color: #ff6347;
+            transform: translateX(-50%);
+        }
+        #ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #00ff00;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: red;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameArea">
+    <div id="paddle"></div>
+    <div id="ball"></div>
+    <div id="gameOver">Game Over! Press "R" to Restart</div>
+</div>
+
+<script>
+    const gameArea = document.getElementById('gameArea');
+    const paddle = document.getElementById('paddle');
+    const ball = document.getElementById('ball');
+    const gameOverText = document.getElementById('gameOver');
+
+    let gameInterval;
+    let gameOver = false;
+    let paddleX = 250;
+    let ballX = 290;
+    let ballY = 200;
+    let ballDX = 2;
+    let ballDY = 3;
+
+    function startGame() {
+        gameOver = false;
+        ballX = 290;
+        ballY = 200;
+        ballDX = 2;
+        ballDY = 3;
+        paddleX = 250;
+        paddle.style.left = `${paddleX}px`;
+        ball.style.left = `${ballX}px`;
+        ball.style.top = `${ballY}px`;
+        gameOverText.style.display = 'none';
+
+        gameInterval = setInterval(gameLoop, 10);
+    }
+
+    function endGame() {
+        gameOver = true;
+        gameOverText.style.display = 'block';
+        clearInterval(gameInterval);
+    }
+
+    function resetGame() {
+        if (gameOver) {
+            startGame();
+        }
+    }
+
+    function movePaddle(direction) {
+        if (direction === 'left' && paddleX > 0) {
+            paddleX -= 20;
+        } else if (direction === 'right' && paddleX < gameArea.clientWidth - paddle.offsetWidth) {
+            paddleX += 20;
+        }
+        paddle.style.left = `${paddleX}px`;
+    }
+
+    function gameLoop() {
+        ballX += ballDX;
+        ballY += ballDY;
+
+        // Bounce off walls
+        if (ballX <= 0 || ballX >= gameArea.clientWidth - ball.offsetWidth) {
+            ballDX *= -1;
+        }
+        if (ballY <= 0) {
+            ballDY *= -1;
+        }
+
+        // Check paddle collision
+        if (
+            ballY + ball.offsetHeight >= paddle.offsetTop &&
+            ballX + ball.offsetWidth >= paddleX &&
+            ballX <= paddleX + paddle.offsetWidth
+        ) {
+            ballDY *= -1; // Bounce upwards
+            ballY = paddle.offsetTop - ball.offsetHeight; // Adjust position to prevent sticking
+        }
+
+        // Check if ball touches the bottom (game over)
+        if (ballY + ball.offsetHeight >= gameArea.clientHeight) {
+            endGame();
+        }
+
+        // Update ball position
+        ball.style.left = `${ballX}px`;
+        ball.style.top = `${ballY}px`;
+    }
+
+    // Handle keyboard input
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            movePaddle('left');
+        } else if (e.key === 'ArrowRight') {
+            movePaddle('right');
+        } else if (e.key.toLowerCase() === 'r') {
+            resetGame();
+        }
+    });
+
+    // Start the game initially
+    startGame();
+</script>
+
+</body>
+</html>
